@@ -50,12 +50,44 @@ export function TaxCounter({ refund, ready, onClick }: Props) {
   const [display, setDisplay] = useState(0);
   const [pulse, setPulse] = useState(false);
   const [pops, setPops] = useState<DiffPop[]>([]);
+  // 모바일 키보드가 올라와 카운터가 가려졌을 때 펄스/팝업을 미루기 위한 가시성 추적.
+  // visualViewport는 키보드 올라옴/내려감을 resize 이벤트로 즉시 알려줌.
+  const [isVisible, setIsVisible] = useState(true);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const lastValueRef = useRef(0);
   const animRef = useRef<number | null>(null);
   const popIdRef = useRef(0);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const vv = window.visualViewport;
+    if (!vv) return; // 미지원 브라우저는 항상 visible로 유지 (기존 동작)
+
+    const check = () => {
+      const el = buttonRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const viewTop = vv.offsetTop;
+      const viewBottom = viewTop + vv.height;
+      // 카운터가 visualViewport 안에 충분히 보이는지 (8px 여유)
+      const visible = rect.top < viewBottom - 8 && rect.bottom > viewTop + 8;
+      setIsVisible(visible);
+    };
+
+    check();
+    vv.addEventListener('resize', check);
+    vv.addEventListener('scroll', check);
+    return () => {
+      vv.removeEventListener('resize', check);
+      vv.removeEventListener('scroll', check);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!ready) return;
+    // 키보드 등으로 카운터가 안 보이는 동안에는 펄스/팝업·카운트 갱신을 보류.
+    // lastValueRef를 그대로 두면, 다시 보이는 시점에 누적 delta로 한 번에 트리거됨.
+    if (!isVisible) return;
     const from = lastValueRef.current;
     const to = refund;
     if (from === to) {
@@ -94,7 +126,7 @@ export function TaxCounter({ refund, ready, onClick }: Props) {
       if (animRef.current) cancelAnimationFrame(animRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refund, ready]);
+  }, [refund, ready, isVisible]);
 
   const isRefund = display >= 0;
   const { main, unit } = formatTopline(display);
@@ -110,6 +142,7 @@ export function TaxCounter({ refund, ready, onClick }: Props) {
 
   return (
     <button
+      ref={buttonRef}
       type="button"
       className={`tax-counter ${isRefund ? 'plus' : 'minus'} weather-${weather.tone} ${pulse ? 'pulse' : ''}`}
       onClick={onClick}
