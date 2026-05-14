@@ -52,7 +52,9 @@ export function OnboardingPage() {
     if (firstSalary) {
       setGross(firstSalary.grossPay);
       setMeal(firstSalary.nonTaxable);
-      if (firstSalary.incomeTax > 0) setIncomeTax(firstSalary.incomeTax);
+      // 저장된 incomeTax + localIncomeTax 합을 "지방세 포함" 입력값으로 복원
+      const savedTotal = firstSalary.incomeTax + firstSalary.localIncomeTax;
+      if (savedTotal > 0) setIncomeTax(savedTotal);
     }
   }, [data]);
 
@@ -78,8 +80,17 @@ export function OnboardingPage() {
     const rules = getTaxRules(year);
     const taxableMonthly = Math.max(0, gross - meal);
     const ins = computeInsuranceFromGross(taxableMonthly, rules);
-    const tax = incomeTax ?? estimateMonthlyIncomeTax(taxableMonthly);
-    const localTax = Math.round(tax * 0.1);
+    let tax: number;
+    let localTax: number;
+    if (incomeTax != null) {
+      // 사용자가 "지방세 포함" 금액 입력 — 1:0.1 비율로 분리 저장
+      const total = incomeTax;
+      tax = Math.round(total / 1.1);
+      localTax = total - tax;
+    } else {
+      tax = estimateMonthlyIncomeTax(taxableMonthly);
+      localTax = Math.round(tax * 0.1);
+    }
     const salary: MonthlySalary = {
       month: 1,
       grossPay: gross,
@@ -276,20 +287,26 @@ function PayslipStep({
   const rules = getTaxRules(year);
   const taxable = Math.max(0, gross - meal);
   const autoTax = useMemo(() => estimateMonthlyIncomeTax(taxable), [taxable]);
+  const autoLocalTax = Math.round(autoTax * 0.1);
+  const autoTotalTax = autoTax + autoLocalTax; // 자동 추정값 (지방세 포함)
   const ins = useMemo(() => computeInsuranceFromGross(taxable, rules), [taxable, rules]);
-  const usedTax = incomeTax ?? autoTax;
-  const localTax = Math.round(usedTax * 0.1);
+  // 입력값/자동값 모두 "지방세 포함" 금액으로 통일해서 표시
+  const usedTotalTax = incomeTax ?? autoTotalTax;
+  const usedIncomeTax = incomeTax != null ? Math.round(incomeTax / 1.1) : autoTax;
+  const usedLocalTax = usedTotalTax - usedIncomeTax;
   const insuranceTotal =
     ins.nationalPension + ins.healthInsurance + ins.longTermCare + ins.employmentInsurance;
-  const net = gross - insuranceTotal - usedTax - localTax;
+  const net = gross - insuranceTotal - usedTotalTax;
 
   // 공제 0원 가정 시 1년치 결정세액 (= 어차피 내야 할 진짜 세금) 시뮬
   const projection = useMemo(() => {
     if (gross <= 0) return null;
     const monthly = buildMonthlyFromGross(1, gross, rules, meal);
     if (incomeTax != null) {
-      monthly.incomeTax = incomeTax;
-      monthly.localIncomeTax = Math.round(incomeTax * 0.1);
+      // 사용자 입력은 "지방세 포함" — 1:0.1 비율로 분리
+      const total = incomeTax;
+      monthly.incomeTax = Math.round(total / 1.1);
+      monthly.localIncomeTax = total - monthly.incomeTax;
     }
     const salaries: MonthlySalary[] = Array.from({ length: 12 }, (_, i) => ({
       ...monthly,
@@ -360,16 +377,15 @@ function PayslipStep({
       {showAdvanced && (
         <div className="onboarding-field">
           <label className="field-label">
-            월 소득세 <span className="field-tag success">정확도 ↑</span>
+            월 소득세 (지방세 포함) <span className="field-tag success">정확도 ↑</span>
           </label>
           <MoneyInput
             value={incomeTax ?? 0}
             onChange={(v) => setIncomeTax(v > 0 ? v : null)}
-            placeholder={String(Math.round(autoTax / 10000))}
+            placeholder={String(Math.round(autoTotalTax / 10000))}
           />
           <div className="field-hint">
-            명세서의 "소득세" 항목. 비워두면 자동 계산({won(autoTax)})돼요.
-            <br />지방소득세는 자동으로 소득세 × 10% 적용돼요.
+            명세서의 <strong>"소득세" + "지방소득세"</strong> 합산 금액. 비워두면 자동 계산({won(autoTotalTax)})돼요.
           </div>
         </div>
       )}
@@ -420,7 +436,7 @@ function PayslipStep({
             </div>
             <div className="preview-row">
               <span>소득세 + 지방세</span>
-              <strong>−{wonCompact(usedTax + localTax)}</strong>
+              <strong>−{wonCompact(usedIncomeTax + usedLocalTax)}</strong>
             </div>
             <div className="preview-row total">
               <span>월 실수령 (추정)</span>

@@ -1871,3 +1871,142 @@ button, [role='button'], a { min-height: 32px; }
   scrollbar-width: none;
 }
 .scroll-x::-webkit-scrollbar { display: none; }
+
+/* ============================================================
+   Responsive — Tablet & Desktop (PC 지원)
+   - 모바일이 1st citizen. PC는 같은 컨텐츠를 자연스럽게 펼침.
+   - Tablet(≥768px): 컨테이너 폭만 살짝 확장
+   - Desktop(≥1024px): BottomNav를 좌측 사이드바로 전환
+   ============================================================ */
+
+/* Tablet — 컨테이너 폭 확장 */
+@media (min-width: 768px) {
+  .app-shell { max-width: 640px; }
+  .topbar-inner { max-width: 640px; }
+  .bottom-nav-inner { max-width: 640px; }
+  .login-shell { max-width: 520px; }
+  .onboarding-shell { max-width: 560px; }
+}
+
+/* Desktop — 좌측 사이드바 nav + 넓은 컨텐츠 */
+@media (min-width: 1024px) {
+  :root { --nav-w: 240px; }
+
+  body { background: var(--surface-2); }
+
+  .app-shell {
+    max-width: 100%;
+    padding-left: var(--nav-w);
+    background: var(--bg);
+  }
+
+  /* TopBar — 사이드바 우측 영역만 점유 */
+  .topbar {
+    left: var(--nav-w);
+    background: rgba(250, 249, 245, 0.92);
+  }
+  .topbar-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* BottomNav → 좌측 세로 사이드바 */
+  .bottom-nav {
+    top: 0;
+    bottom: 0;
+    right: auto;
+    width: var(--nav-w);
+    height: 100dvh;
+    padding-top: var(--sat);
+    padding-bottom: 0;
+    border-top: none;
+    border-right: 1px solid var(--line);
+    background: var(--surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .bottom-nav::before {
+    content: '💸 거지같은\A 연말정산';
+    white-space: pre;
+    display: block;
+    padding: 22px 20px 18px;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    border-bottom: 1px solid var(--line);
+  }
+  .bottom-nav-inner {
+    max-width: 100%;
+    height: auto;
+    grid-template-columns: 1fr;
+    grid-auto-rows: 48px;
+    padding: 12px;
+    gap: 4px;
+  }
+  .nav-item {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 0 14px;
+    height: 100%;
+    font-size: 14px;
+    border-radius: var(--radius-sm);
+    color: var(--ink-muted);
+    position: relative;
+  }
+  .nav-item .icon {
+    font-size: 18px;
+    width: 22px;
+    height: 22px;
+  }
+  .nav-item.active {
+    background: var(--brand-soft);
+    color: var(--ink);
+  }
+  /* 활성 표시: 좌측 액센트 바 */
+  .nav-item.active .icon::after { display: none; }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    bottom: 10px;
+    width: 3px;
+    background: var(--accent);
+    border-radius: 0 999px 999px 0;
+  }
+
+  /* Main 컨텐츠 영역: 가운데 정렬 */
+  .app-main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: calc(var(--topbar-h) + 28px) 32px 56px;
+  }
+
+  /* BottomNav 영역이 없어졌으니 AntD message는 일반 위치로 */
+  .ant-message {
+    top: 24px !important;
+    bottom: auto !important;
+  }
+
+  /* 데스크톱 카드 그림자 살짝 강조 */
+  .card { box-shadow: var(--shadow); }
+}
+
+/* 마우스 hover 지원 디바이스 — 클릭 가능한 요소들에 hover 피드백 */
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover { background: #2a2825; }
+  .btn-secondary:hover { background: #e0ddd2; }
+  .year-pill:hover { background: #e0ddd2; }
+  .profile-pill:hover { background: #e0ddd2; }
+  .login-profile:hover { background: #f5f2ea; }
+  .nav-item:hover { color: var(--ink); background: rgba(31, 30, 28, 0.04); }
+  .nav-item.active:hover { background: var(--brand-soft); }
+  .rec-row:hover { background: var(--brand-soft); }
+  .usage-row.clickable:hover { background: var(--brand-soft); }
+  .year-chip:hover:not(.active) { background: #e0ddd2; }
+  .tax-counter:hover { background: rgba(10, 10, 10, 0.04); }
+}

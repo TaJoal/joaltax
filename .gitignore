@@ -8,8 +8,6 @@ node_modules/
 /coverage
 
 # Claude
-claude.md
-CLAUDE.md
 .claude/
 
 # Production build

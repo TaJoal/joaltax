@@ -198,6 +198,11 @@ export interface TaxCalculationResult {
   insuranceCredit: number;
   monthlyRentCredit: number;
   totalTaxCredits: number;
+  /** 결정세액 (소득세분만) — 산출세액 − 세액공제 */
+  determinedTaxIncome: number;
+  /** 지방소득세 = determinedTaxIncome × 10% */
+  localTaxOnDetermined: number;
+  /** 결정세액 합계 (소득세 + 지방세) — 사용자가 보는 환급/추납 기준 */
   determinedTax: number;
   prepaidTax: number;
   refund: number;

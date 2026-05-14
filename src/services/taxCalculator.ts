@@ -11,6 +11,8 @@ import type {
 import { computeCardDeduction } from './deductionService';
 
 const NON_TAXABLE_MEAL_MONTHLY = 200000;
+/** 지방소득세는 소득세 결정세액의 10%. 사용자가 명세서·홈택스에서 보는 환급/추납은 둘을 합산한 값. */
+const LOCAL_SURTAX_RATE = 0.1;
 
 function clampNonTaxable(monthlyNonTaxable: number): number {
   return Math.min(monthlyNonTaxable, NON_TAXABLE_MEAL_MONTHLY);
@@ -169,11 +171,15 @@ export function calculate(input: TaxCalculatorInput): TaxCalculationResult {
 
   const taxBaseIfNoIncomeDeduction = earnedIncomeAmount;
   const grossBracket = pickBracket(taxBaseIfNoIncomeDeduction, rules);
-  const grossTaxIfNoDeductions = Math.max(
+  const grossTaxIfNoDeductionsIncome = Math.max(
     0,
     taxBaseIfNoIncomeDeduction * grossBracket.rate - grossBracket.deduction,
   );
-  const incomeDeductionSaving = Math.max(0, grossTaxIfNoDeductions - calculatedTax);
+  // 지방세 포함 — 사용자 환급/추납 멘탈 모델과 일치 (홈택스 표기 방식)
+  const grossTaxIfNoDeductions = Math.round(grossTaxIfNoDeductionsIncome * (1 + LOCAL_SURTAX_RATE));
+  const incomeDeductionSaving = Math.round(
+    Math.max(0, grossTaxIfNoDeductionsIncome - calculatedTax) * (1 + LOCAL_SURTAX_RATE),
+  );
 
   const earnedIncomeCredit = computeEarnedIncomeCredit(calculatedTax, rules);
   const childCredit = computeChildCredit(family, rules);
@@ -194,11 +200,19 @@ export function calculate(input: TaxCalculatorInput): TaxCalculationResult {
     + insuranceCredit
     + monthlyRentCredit;
 
-  const taxCreditSaving = Math.min(totalTaxCredits, calculatedTax);
-  const determinedTax = Math.max(0, calculatedTax - totalTaxCredits);
+  const taxCreditSaving = Math.round(
+    Math.min(totalTaxCredits, calculatedTax) * (1 + LOCAL_SURTAX_RATE),
+  );
+  // 결정세액(소득세) — 산출세액 - 세액공제 (둘 다 소득세 기준)
+  const determinedTaxIncome = Math.max(0, calculatedTax - totalTaxCredits);
+  // 지방소득세 = 결정세액(소득세) × 10%
+  const localTaxOnDetermined = Math.round(determinedTaxIncome * LOCAL_SURTAX_RATE);
+  // 결정세액 합계 (지방세 포함) — 사용자가 보는 최종 부담
+  const determinedTax = determinedTaxIncome + localTaxOnDetermined;
   const totalSaving = incomeDeductionSaving + taxCreditSaving;
 
-  const prepaidTax = salaries.reduce((s, m) => s + m.incomeTax, 0);
+  // 기납부 = 매월 원천징수된 소득세 + 지방소득세 합산
+  const prepaidTax = salaries.reduce((s, m) => s + m.incomeTax + m.localIncomeTax, 0);
 
   const refund = prepaidTax - determinedTax;
 
@@ -222,8 +236,10 @@ export function calculate(input: TaxCalculatorInput): TaxCalculationResult {
     { label: '기부금 세액공제', amount: -donationCredit, kind: 'credit' },
     { label: '보장성보험료 세액공제', amount: -insuranceCredit, kind: 'credit' },
     { label: '월세 세액공제', amount: -monthlyRentCredit, kind: 'credit' },
-    { label: '결정세액', amount: determinedTax, kind: 'subtotal' },
-    { label: '기납부 소득세', amount: -prepaidTax, kind: 'deduction' },
+    { label: '결정세액 (소득세)', amount: determinedTaxIncome, kind: 'tax' },
+    { label: '지방소득세 (소득세 × 10%)', amount: localTaxOnDetermined, kind: 'tax' },
+    { label: '결정세액 합계 (지방세 포함)', amount: determinedTax, kind: 'subtotal' },
+    { label: '기납부 (소득세 + 지방세)', amount: -prepaidTax, kind: 'deduction' },
     { label: refund >= 0 ? '예상 환급액' : '추가 납부액', amount: Math.abs(refund), kind: 'result' },
   ];
 
@@ -250,6 +266,8 @@ export function calculate(input: TaxCalculatorInput): TaxCalculationResult {
     insuranceCredit,
     monthlyRentCredit,
     totalTaxCredits,
+    determinedTaxIncome,
+    localTaxOnDetermined,
     determinedTax,
     prepaidTax,
     refund,

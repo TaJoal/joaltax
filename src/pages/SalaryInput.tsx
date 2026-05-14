@@ -41,8 +41,11 @@ export function SalaryInputPage() {
       // 기존 저장 소득세가 자동값과 다르면 사용자 직접 입력으로 간주
       const t = Math.max(0, first.grossPay - first.nonTaxable);
       const autoIT = estimateMonthlyIncomeTax(t);
-      if (Math.abs(first.incomeTax - autoIT) > 1000) {
-        setIncomeTax(first.incomeTax);
+      const autoTotal = autoIT + Math.round(autoIT * 0.1);
+      const savedTotal = first.incomeTax + first.localIncomeTax;
+      // 저장 합계가 자동 추정값과 다르면 사용자 직접 입력으로 간주 (지방세 포함 합계)
+      if (Math.abs(savedTotal - autoTotal) > 1000) {
+        setIncomeTax(savedTotal);
         setShowIncomeTaxInput(true);
       }
       // 기존 저장 4대보험이 자동값과 다르면 사용자 직접 입력으로 간주
@@ -64,9 +67,13 @@ export function SalaryInputPage() {
 
   const taxable = Math.max(0, gross - nonTaxable);
   const autoTax = useMemo(() => estimateMonthlyIncomeTax(taxable), [taxable]);
+  const autoLocalTax = Math.round(autoTax * 0.1);
+  const autoTotalTax = autoTax + autoLocalTax;
   const autoIns = useMemo(() => computeInsuranceFromGross(taxable, rules), [taxable, rules]);
-  const usedTax = incomeTax ?? autoTax;
-  const usedLocalTax = Math.round(usedTax * 0.1);
+  // incomeTax 입력은 "지방세 포함" 합계. 내부 저장은 소득세/지방세 분리.
+  const usedTotalTax = incomeTax ?? autoTotalTax;
+  const usedTax = incomeTax != null ? Math.round(incomeTax / 1.1) : autoTax;
+  const usedLocalTax = usedTotalTax - usedTax;
   const usedNp = npOverride ?? autoIns.nationalPension;
   const usedHi = hiOverride ?? autoIns.healthInsurance;
   const usedLtc = ltcOverride ?? autoIns.longTermCare;
@@ -148,16 +155,15 @@ export function SalaryInputPage() {
             {showIncomeTaxInput && (
               <div className="field">
                 <label className="field-label">
-                  월 소득세 <span className="field-tag success">정확도 ↑</span>
+                  월 소득세 (지방세 포함) <span className="field-tag success">정확도 ↑</span>
                 </label>
                 <MoneyInput
                   value={incomeTax ?? 0}
                   onChange={(v) => setIncomeTax(v > 0 ? v : null)}
-                  placeholder={String(Math.round(autoTax / 10000))}
+                  placeholder={String(Math.round(autoTotalTax / 10000))}
                 />
                 <div className="field-hint">
-                  명세서의 "소득세" 항목 그대로. 비워두면 자동 계산({won(autoTax)}) 사용.
-                  지방세는 자동으로 소득세 × 10% 적용돼요.
+                  명세서의 <strong>"소득세" + "지방소득세"</strong> 합산 금액. 비워두면 자동 계산({won(autoTotalTax)}) 사용.
                 </div>
               </div>
             )}

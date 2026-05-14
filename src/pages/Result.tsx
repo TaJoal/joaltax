@@ -282,12 +282,20 @@ export function ResultPage() {
               <span className="value">-{won(row.amount)}</span>
             </div>
           ))}
+        <div className="stat-row">
+          <span className="label">결정세액 (소득세)</span>
+          <span className="value">{won(result.determinedTaxIncome)}</span>
+        </div>
+        <div className="stat-row">
+          <span className="label">지방소득세 (소득세 × 10%)</span>
+          <span className="value">+{won(result.localTaxOnDetermined)}</span>
+        </div>
         <div className="stat-row subtotal">
-          <span className="label">결정세액</span>
+          <span className="label">결정세액 합계 (지방세 포함)</span>
           <span className="value">{won(result.determinedTax)}</span>
         </div>
         <div className="stat-row">
-          <span className="label">기납부 소득세</span>
+          <span className="label">기납부 (소득세 + 지방세)</span>
           <span className="value">-{won(result.prepaidTax)}</span>
         </div>
         <div className={`stat-row result ${isRefund ? '' : 'warn'}`}>
