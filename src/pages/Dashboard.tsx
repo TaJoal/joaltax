@@ -137,8 +137,8 @@ export function DashboardPage() {
 
         <div className="score-hint">
           {isRefund
-            ? '아래 항목을 추가하면 더 많이 돌려받을 수 있어요'
-            : '아래 항목을 추가하면 더 내야 할 돈이 줄어들어요'}
+            ? '항목을 추가하면 더 돌려받아요'
+            : '항목을 추가하면 추가납부가 줄어요'}
         </div>
       </div>
 
@@ -275,7 +275,7 @@ export function DashboardPage() {
           <span className="icon">💼</span>
           <div className="text">
             <div className="primary">월별 급여 / 상여</div>
-            <div className="secondary">월별로 다르거나 상여가 있으면</div>
+            <div className="secondary">월별·상여 수정</div>
           </div>
           <span style={{ color: 'var(--ink-soft)' }}>›</span>
         </Link>
@@ -283,7 +283,7 @@ export function DashboardPage() {
           <span className="icon">🧾</span>
           <div className="text">
             <div className="primary">정산 항목 전체</div>
-            <div className="secondary">카드·의료비·연금 등 모든 항목</div>
+            <div className="secondary">카드·의료비·연금 등</div>
           </div>
           <span style={{ color: 'var(--ink-soft)' }}>›</span>
         </Link>
@@ -291,7 +291,7 @@ export function DashboardPage() {
           <span className="icon">📊</span>
           <div className="text">
             <div className="primary">단계별 계산 과정</div>
-            <div className="secondary">총급여 → 과세표준 → 세금 흐름</div>
+            <div className="secondary">세금이 어떻게 계산되는지</div>
           </div>
           <span style={{ color: 'var(--ink-soft)' }}>›</span>
         </Link>
@@ -299,7 +299,7 @@ export function DashboardPage() {
           <span className="icon">🔄</span>
           <div className="text">
             <div className="primary">연도 비교</div>
-            <div className="secondary">작년 vs 올해 — 얼마나 달라졌나</div>
+            <div className="secondary">작년 vs 올해</div>
           </div>
           <span style={{ color: 'var(--ink-soft)' }}>›</span>
         </Link>

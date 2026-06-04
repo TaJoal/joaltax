@@ -58,7 +58,7 @@ export function buildRecommendations(args: {
     title: '함께 사는 가족 추가하기',
     description: hasFamily
       ? `${data.family.length}명 등록됨`
-      : '배우자·자녀·부모님 한 명당 약 22만원 돌려받기',
+      : '한 명당 약 22만원 절세',
     estimatedSavings: hasFamily ? 0 : 225_000,
     done: hasFamily,
     href: '/deduction?tab=family',
@@ -93,7 +93,7 @@ export function buildRecommendations(args: {
       title: '연금저축 / IRP 납입',
       description: pensionDone
         ? `한도까지 ${Math.round(pensionRoom / 10_000)}만원 더 가능`
-        : '연 900만원까지 12~15% 그대로 환급',
+        : '노후 준비하며 세액공제',
       estimatedSavings: Math.round(pensionRoom * pensionRate),
       done: false, // 한도까지 여유 있으면 항상 추천
       href: '/deduction?tab=credit',
@@ -110,7 +110,7 @@ export function buildRecommendations(args: {
     title: '의료비 영수증 모으기',
     description: medicalDone
       ? `${Math.round(medicalIn / 10_000)}만원 입력됨`
-      : '병원·약국 영수증 — 총급여 3% 넘는 만큼 환급',
+      : '병원·약국 영수증 모으기',
     estimatedSavings: medicalDone ? 0 : 75_000,
     done: medicalDone,
     href: '/deduction?tab=credit',
@@ -129,7 +129,7 @@ export function buildRecommendations(args: {
     title: '기부금 입력',
     description: donationDone
       ? `${Math.round(donationIn / 10_000)}만원 입력됨`
-      : '교회·구호단체·고향사랑기부 모두 가능',
+      : '종교·구호·고향사랑',
     estimatedSavings: donationDone ? 0 : 60_000,
     done: donationDone,
     href: '/deduction?tab=credit',
@@ -146,7 +146,7 @@ export function buildRecommendations(args: {
       title: '주택청약 납입',
       description: housingDone
         ? '납입 완료'
-        : '월 25만원만 넣어도 약 18만원 절세',
+        : '무주택 세대주 절세 항목',
       estimatedSavings: housingDone ? 0 : 180_000,
       done: housingDone,
       href: '/deduction?tab=income',
@@ -165,7 +165,7 @@ export function buildRecommendations(args: {
       title: '월세 입력',
       description: rentDone
         ? '월세 입력됨'
-        : `월세 50만원이면 약 ${Math.round((6_000_000 * rentRate) / 10_000)}만원 환급`,
+        : '무주택 세대주 월세 환급',
       estimatedSavings: rentDone ? 0 : Math.round(6_000_000 * rentRate),
       done: rentDone,
       href: '/deduction?tab=credit',
@@ -180,7 +180,7 @@ export function buildRecommendations(args: {
       id: 'youth-fund',
       icon: '📈',
       title: '청년형 장기펀드',
-      description: '연 600만원까지 40% 소득공제 (만 19~34세)',
+      description: '청년 전용 소득공제',
       estimatedSavings: 360_000,
       done: false,
       href: '/deduction?tab=income',
@@ -191,7 +191,7 @@ export function buildRecommendations(args: {
       id: 'youth-leap',
       icon: '🚀',
       title: '청년도약계좌',
-      description: '월 70만원 5년 — 정부 매칭 + 비과세',
+      description: '정부 매칭 + 비과세',
       estimatedSavings: 0,
       done: false,
       href: '/deduction?tab=income',
@@ -203,7 +203,7 @@ export function buildRecommendations(args: {
         id: 'youth-smb',
         icon: '🏢',
         title: '중소기업 취업 청년 소득세 감면',
-        description: '5년간 소득세 90% 감면 (한도 200만/년)',
+        description: '소득세 최대 90% 감면',
         estimatedSavings: 0,
         done: false,
         href: '/result',
@@ -219,7 +219,7 @@ export function buildRecommendations(args: {
       id: 'senior-medical',
       icon: '💊',
       title: '본인 의료비 (한도 없음)',
-      description: '만 65세 이상 본인 의료비는 전액 한도 없이 공제',
+      description: '본인 의료비 한도 없이 공제',
       estimatedSavings: 0,
       done: false,
       href: '/deduction?tab=credit',

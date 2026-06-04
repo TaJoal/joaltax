@@ -167,6 +167,12 @@ export function ResultPage() {
     return items;
   })();
 
+  // 절세 요약 — 모두 이미 계산된 값 재사용
+  const totalSaved = result.totalSaving; // 공제로 줄어든 세액
+  const savedIncome = result.incomeDeductionSaving; // 소득공제 기여
+  const savedCredit = result.taxCreditSaving; // 세액공제 기여
+  const morePossible = usageItems.reduce((s, it) => s + (it.remainingSaving ?? 0), 0); // 더 줄일 수 있는 세액
+
   return (
     <>
       <div className="page-head">
@@ -174,26 +180,9 @@ export function ResultPage() {
         <p className="page-subtitle">단계별 계산 과정을 확인하세요</p>
       </div>
 
-      <div
-        style={{
-          background: 'rgba(245, 158, 11, 0.08)',
-          border: '1px solid rgba(245, 158, 11, 0.25)',
-          borderRadius: 12,
-          padding: '12px 14px',
-          marginBottom: 16,
-          display: 'flex',
-          gap: 10,
-          alignItems: 'flex-start',
-        }}
-      >
-        <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
-        <div style={{ fontSize: 12, color: '#92400e', lineHeight: 1.55 }}>
-          <strong>이 결과는 추정치입니다.</strong>
-          <br />
-          <span style={{ color: '#a16207' }}>
-            실제 홈택스 연말정산과 차이가 있을 수 있어요. 누락된 영수증·자동 자료·세법 개정 등이 반영되지 않습니다.
-          </span>
-        </div>
+      <div className="callout warn">
+        <span className="ico">⚠️</span>
+        <span>실제 홈택스 결과와 차이가 있을 수 있는 <strong>추정치</strong>예요.</span>
       </div>
 
       <div className="hero">
@@ -207,6 +196,32 @@ export function ResultPage() {
         <div className="hero-hint">
           결정세액 {wonCompact(result.determinedTax)} · 기납부 {wonCompact(result.prepaidTax)}
         </div>
+      </div>
+
+      <div className="save-hero">
+        <span className="save-hero-label">공제로 줄인 세금</span>
+        <p className="save-hero-amount">{won(totalSaved)}</p>
+        <span className="save-hero-sub">
+          공제가 없었다면 {wonCompact(result.grossTaxIfNoDeductions)}를 냈을 거예요
+        </span>
+        <div className="save-split">
+          <div className="save-chip">
+            <span className="save-chip-label">소득공제로</span>
+            <span className="save-chip-value">−{wonCompact(savedIncome)}</span>
+          </div>
+          <div className="save-chip">
+            <span className="save-chip-label">세액공제로</span>
+            <span className="save-chip-value">−{wonCompact(savedCredit)}</span>
+          </div>
+        </div>
+        {morePossible > 0 && (
+          <Link to="/deduction" className="save-more">
+            <span className="save-more-text">
+              💡 아직 <strong>{won(morePossible)}</strong> 더 줄일 수 있어요
+            </span>
+            <span className="save-more-cta">채우러 가기 ›</span>
+          </Link>
+        )}
       </div>
 
       <div className="card">

@@ -52,7 +52,7 @@ export function DeductionExplainer() {
         <div style={{ padding: '0 20px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <ExplainBlock
             title="공제 = 세금을 줄여주는 혜택"
-            body="국가가 정한 항목(부양가족, 카드 사용, 의료비 등)에 해당하면 세금을 깎아줘요. 깎아주는 방식이 두 가지 있어요."
+            body="해당하는 항목이 있으면 세금을 깎아줘요. 방식은 두 가지예요."
             color="#0f172a"
           />
 
@@ -60,7 +60,7 @@ export function DeductionExplainer() {
             tag="📉 소득공제"
             tagColor="#10b981"
             title="세금 매길 소득 자체를 깎아줘요"
-            body="공제액만큼 과세표준이 낮아져서, 거기 곱해지는 세율(예: 15%, 24%)만큼만 절세돼요."
+            body="과세표준이 낮아져서 세율만큼만 절세돼요."
             example="공제 100만원 × 세율 15% = 절세 15만원"
             color="#065f46"
           />
@@ -69,15 +69,14 @@ export function DeductionExplainer() {
             tag="🎯 세액공제"
             tagColor="#4f46e5"
             title="이미 계산된 세금에서 직접 빼줘요"
-            body="공제액이 곧 절세액. 같은 100만원이어도 소득공제보다 효과가 큰 경우가 많아요."
+            body="공제액이 곧 절세액. 효과가 더 큰 경우가 많아요."
             example="공제 100만원 = 절세 100만원"
             color="#312e81"
           />
 
           <div style={{ fontSize: 11, color: '#475569', lineHeight: 1.6, padding: '4px 0 0' }}>
-            <strong>요약:</strong> 같은 금액이라면 일반적으로 <strong>세액공제 &gt; 소득공제</strong>가 유리해요.
-            하지만 항목마다 어디에 들어가는지 정해져 있어서 우리가 고를 순 없어요.
-            아래에서 각 항목이 어느 쪽인지 확인하세요.
+            <strong>요약:</strong> 같은 금액이면 보통 <strong>세액공제</strong>가 더 유리해요.
+            어느 쪽인지는 항목마다 정해져 있어요.
           </div>
         </div>
       )}

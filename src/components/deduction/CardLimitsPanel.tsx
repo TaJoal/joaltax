@@ -90,24 +90,23 @@ export function CardLimitsPanel({ breakdown, rules }: Props) {
   if (breakdown.excess === 0) {
     nudge = {
       tone: 'info',
-      text: `총급여 25%(${wonCompact(breakdown.threshold)}) 초과분부터 공제됩니다. 그 이전엔 어떤 카드를 써도 공제 없어요.`,
+      text: `총급여 25%(${wonCompact(breakdown.threshold)}) 초과분부터 공제돼요.`,
     };
   } else if (basePct >= 100) {
     nudge = {
       tone: 'warn',
-      text: '합산 한도 도달 ✓ 신용/체크/현금은 더 써도 공제 안 늘어나요. 전통시장·대중교통·도서공연은 별도 한도가 남아 있다면 거기로 쓰는 게 유리합니다.',
+      text: '합산 한도 도달 ✓ 전통시장·대중교통·도서공연으로 쓰는 게 유리해요.',
     };
   } else if (creditDominant && creditAlonePct >= 50) {
-    const switchableSpend = baseRemaining / rates.checkCard;
     const wouldGainExtra = baseRemaining - baseRemaining * (rates.creditCard / rates.checkCard);
     nudge = {
       tone: 'warn',
-      text: `💡 신용카드 비중이 큽니다. 앞으로는 체크카드/현금영수증을 쓰면 같은 ${wonCompact(switchableSpend)}로 공제를 ${wonCompact(baseRemaining)}까지 채울 수 있어요 (신용카드로는 ${wonCompact(baseRemaining / rates.creditCard)}이 필요). 약 ${wonCompact(wouldGainExtra)} 더 절세 가능.`,
+      text: `💡 신용 비중이 커요. 체크·현금으로 바꾸면 절반만 써도 같은 공제 — 약 ${wonCompact(wouldGainExtra)} 더 절세.`,
     };
   } else if (basePct < 50) {
     nudge = {
       tone: 'info',
-      text: `현재 공제율이 낮은 편이에요. 체크카드/현금영수증(30%)이 신용카드(15%)보다 2배 유리합니다.`,
+      text: `체크·현금(30%)이 신용(15%)보다 2배 유리해요.`,
     };
   } else {
     nudge = { tone: 'success', text: '✓ 균형 잡힌 카드 사용 패턴이에요.' };

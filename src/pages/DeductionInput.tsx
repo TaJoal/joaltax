@@ -180,14 +180,14 @@ export function DeductionInputPage() {
         <DedCard
           icon="💳"
           title="카드 · 현금영수증"
-          hint="연봉 25% 초과분부터 — 체크/현금이 신용보다 2배 공제"
+          hint="체크·현금이 더 유리해요"
           current={cardMonthSum > 0 ? `월 평균 ${wonCompact(cardMonthlyAvg)}` : '미입력'}
           onClick={() => setActiveSheet({ kind: 'quick', intent: 'card' })}
         />
         <DedCard
           icon="🏠"
           title="주택청약저축"
-          hint="총급여 7천 이하 무주택 세대주 · 한도 300만"
+          hint="무주택 세대주 대상"
           current={d.housingSaving > 0 ? wonCompact(d.housingSaving) : '미입력'}
           ratio={d.housingSaving / 3_000_000}
           onClick={() => setActiveSheet({ kind: 'quick', intent: 'housing' })}
@@ -199,7 +199,7 @@ export function DeductionInputPage() {
         <DedCard
           icon="💰"
           title="연금저축 · IRP"
-          hint="합산 한도 900만 · 공제율 12~15%"
+          hint="노후 준비하며 세액공제"
           current={pensionTotal > 0 ? wonCompact(pensionTotal) : '미입력'}
           ratio={pensionTotal / 9_000_000}
           onClick={() => setActiveSheet({ kind: 'quick', intent: 'pension' })}
@@ -207,28 +207,28 @@ export function DeductionInputPage() {
         <DedCard
           icon="🏥"
           title="의료비"
-          hint="총급여 3% 초과분 15% 환급"
+          hint="병원·약국·치과 영수증"
           current={medicalTotal > 0 ? `${wonCompact(medicalTotal)} · ${medicalCount}건` : '미입력'}
           onClick={() => setActiveSheet({ kind: 'medical' })}
         />
         <DedCard
           icon="📚"
           title="교육비"
-          hint="본인 · 자녀 학비 / 학원 / 자격증 등"
+          hint="본인·자녀 학비"
           current={eduTotal > 0 ? `${wonCompact(eduTotal)} · ${eduCount}건` : '미입력'}
           onClick={() => setActiveSheet({ kind: 'education' })}
         />
         <DedCard
           icon="🎁"
           title="기부금"
-          hint="종교 · 구호 · 고향사랑 등"
+          hint="종교·구호·고향사랑"
           current={donationTotal > 0 ? `${wonCompact(donationTotal)} · ${donationCount}건` : '미입력'}
           onClick={() => setActiveSheet({ kind: 'donation' })}
         />
         <DedCard
           icon="🏘️"
           title="월세"
-          hint="총급여 8천 이하 · 한도 1,000만"
+          hint="무주택 세대주 월세"
           current={d.monthlyRent > 0 ? wonCompact(d.monthlyRent) : '미입력'}
           ratio={d.monthlyRent / 10_000_000}
           onClick={() => setActiveSheet({ kind: 'quick', intent: 'rent' })}
@@ -236,7 +236,7 @@ export function DeductionInputPage() {
         <DedCard
           icon="🛡️"
           title="보장성 보험료"
-          hint="실손 · 생명 · 상해 등 · 한도 100만"
+          hint="실손·생명·상해 보험"
           current={d.insurance > 0 ? wonCompact(d.insurance) : '미입력'}
           ratio={d.insurance / 1_000_000}
           onClick={() => setActiveSheet({ kind: 'quick', intent: 'insurance' })}
@@ -254,7 +254,7 @@ export function DeductionInputPage() {
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13, fontWeight: 700 }}>한부모 공제</div>
             <div style={{ fontSize: 11, color: 'var(--ink-soft)' }}>
-              해당 시 100만원 추가 공제
+              100만원 추가 공제
             </div>
           </div>
           <input
@@ -279,8 +279,8 @@ export function DeductionInputPage() {
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13, fontWeight: 700 }}>부녀자 공제</div>
             <div style={{ fontSize: 11, color: 'var(--ink-soft)' }}>
-              종합소득 3천만 이하 여성(배우자 있거나 부양가족 있는 세대주) · 50만원
-              {d.isSingleParent && ' · 한부모 공제와 중복 불가'}
+              종합소득 3천만 이하 여성 · 50만원
+              {d.isSingleParent && ' · 한부모와 중복 불가'}
             </div>
           </div>
           <input
@@ -315,7 +315,7 @@ export function DeductionInputPage() {
         onClose={close}
         title="의료비 영수증"
         emoji="🏥"
-        description="병원·약국·치과 등 — 총급여 3% 초과분 15% 환급"
+        description="병원·약국·치과 영수증"
         categories={MEDICAL_CATEGORIES}
         items={d.medicalItems ?? []}
         onChange={onMedicalChange}
@@ -325,7 +325,7 @@ export function DeductionInputPage() {
         onClose={close}
         title="교육비"
         emoji="📚"
-        description="본인 등록금·자녀 학비·자격증 등"
+        description="본인·자녀 학비"
         categories={EDUCATION_CATEGORIES}
         items={d.educationItems ?? []}
         onChange={onEducationChange}
@@ -335,7 +335,7 @@ export function DeductionInputPage() {
         onClose={close}
         title="기부금"
         emoji="🎁"
-        description="종교·구호·고향사랑 등 — 1천만 이하 15% 환급"
+        description="종교·구호·고향사랑"
         categories={DONATION_CATEGORIES}
         items={d.donationItems ?? []}
         onChange={onDonationChange}
