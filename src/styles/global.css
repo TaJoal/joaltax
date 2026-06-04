@@ -1671,6 +1671,18 @@ a {
   margin: 0 -8px;
   padding-left: 8px;
   padding-right: 8px;
+  /* button element reset (component is used as <a> and <button>) */
+  background: transparent;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  width: auto;
+}
+button.rec-row {
+  width: calc(100% + 16px);
 }
 .rec-row:last-child { border-bottom: none; }
 .rec-row:active { background: var(--brand-soft); }

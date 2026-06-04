@@ -2,9 +2,16 @@ export interface ExpenseCategory {
   key: string;
   label: string;
   icon: string;
-  /** Effective credit rate for this category (for hint display) */
+  /** 세액공제율 (의료비 차등: 일반 0.15 / 난임 0.30 / 미숙아 0.20). 힌트 표시 + 계산에 사용 */
   rate: number;
   note?: string;
+  /** 항목별(또는 1인) 한도 (원). 예: 안경 50만, 미취학·초중고 300만, 대학 900만 */
+  limit?: number;
+  /**
+   * 의료비 한정: true면 일반의료비 700만 공통 한도에서 제외(본인·65+·장애인·난임·미숙아).
+   * 기부금 한정: 'hometown'/'political'은 별도 계산식 적용.
+   */
+  special?: boolean;
 }
 
 export const MEDICAL_CATEGORIES: ExpenseCategory[] = [
@@ -12,11 +19,11 @@ export const MEDICAL_CATEGORIES: ExpenseCategory[] = [
   { key: 'hospital', label: '입원·수술', icon: '🏨', rate: 0.15 },
   { key: 'pharmacy', label: '약국', icon: '💊', rate: 0.15 },
   { key: 'dental', label: '치과', icon: '🦷', rate: 0.15 },
-  { key: 'optical', label: '안경·콘택트', icon: '👓', rate: 0.15, note: '50만원 한도' },
+  { key: 'optical', label: '안경·콘택트', icon: '👓', rate: 0.15, note: '1인 50만원 한도', limit: 500000 },
   { key: 'oriental', label: '한방·한약', icon: '🌿', rate: 0.15 },
-  { key: 'infertility', label: '난임시술', icon: '🤰', rate: 0.30, note: '공제율 30%' },
-  { key: 'premature', label: '미숙아·선천성', icon: '👶', rate: 0.20, note: '공제율 20%' },
-  { key: 'self', label: '본인·65세 이상·장애인', icon: '🧑', rate: 0.15, note: '한도 없음' },
+  { key: 'infertility', label: '난임시술', icon: '🤰', rate: 0.30, note: '공제율 30%', special: true },
+  { key: 'premature', label: '미숙아·선천성', icon: '👶', rate: 0.20, note: '공제율 20%', special: true },
+  { key: 'self', label: '본인·65세 이상·장애인', icon: '🧑', rate: 0.15, note: '한도 없음', special: true },
   { key: 'etc', label: '기타', icon: '🩹', rate: 0.15 },
 ];
 
@@ -27,9 +34,9 @@ export const MEDICAL_CATEGORIES: ExpenseCategory[] = [
  */
 export const EDUCATION_CATEGORIES: ExpenseCategory[] = [
   { key: 'self', label: '본인 교육비', icon: '🎓', rate: 0.15, note: '대학·대학원·직업훈련·자격증 모두 포함 · 한도 없음' },
-  { key: 'preschool', label: '미취학 자녀', icon: '👶', rate: 0.15, note: '어린이집·유치원·취학전 학원·체육 · 1인 300만 한도' },
-  { key: 'k12', label: '초·중·고 자녀', icon: '📚', rate: 0.15, note: '수업료·방과후·교복·현장학습 · 1인 300만 한도' },
-  { key: 'college', label: '대학생 자녀', icon: '🏛️', rate: 0.15, note: '대학교·전문대 등록금 · 1인 900만 한도' },
+  { key: 'preschool', label: '미취학 자녀', icon: '👶', rate: 0.15, note: '어린이집·유치원·취학전 학원·체육 · 1인 300만 한도', limit: 3000000 },
+  { key: 'k12', label: '초·중·고 자녀', icon: '📚', rate: 0.15, note: '수업료·방과후·교복·현장학습 · 1인 300만 한도', limit: 3000000 },
+  { key: 'college', label: '대학생 자녀', icon: '🏛️', rate: 0.15, note: '대학교·전문대 등록금 · 1인 900만 한도', limit: 9000000 },
   { key: 'special', label: '장애인 특수교육', icon: '♿', rate: 0.15, note: '한도 없음' },
   { key: 'studentLoan', label: '학자금 대출 상환 (본인)', icon: '💳', rate: 0.15, note: '대출 원리금 상환액 · 한도 없음' },
 ];
@@ -39,7 +46,8 @@ export const EDUCATION_CATEGORIES: ExpenseCategory[] = [
  * 나머지는 모두 일반기부금으로 합산되어 동일한 공제율 적용 (1천만 이하 15%, 초과 30%).
  */
 export const DONATION_CATEGORIES: ExpenseCategory[] = [
-  { key: 'hometown', label: '고향사랑기부', icon: '🏛️', rate: 1.0, note: '10만원까지 100%, 초과분 15% (연 500만 한도)' },
+  { key: 'hometown', label: '고향사랑기부', icon: '🏛️', rate: 1.0, note: '10만원까지 100%, 초과분 15%', special: true },
+  { key: 'political', label: '정치자금', icon: '🗳️', rate: 1.0, note: '10만원까지 100%, 10만~3천만 15%, 초과 25%', special: true },
   { key: 'religion', label: '종교단체', icon: '⛪', rate: 0.15, note: '1천만 이하 15%, 초과분 30%' },
   { key: 'welfare', label: '사회복지·공익', icon: '🤝', rate: 0.15, note: '1천만 이하 15%, 초과분 30%' },
   { key: 'culture', label: '교육·문화·예술', icon: '🎨', rate: 0.15, note: '1천만 이하 15%, 초과분 30%' },

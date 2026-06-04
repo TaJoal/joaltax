@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Empty } from 'antd';
 import { Link } from 'react-router-dom';
 import { useDataStore } from '@/store/dataStore';
@@ -7,12 +8,38 @@ import { useYearStore } from '@/store/yearStore';
 import { won, wonCompact } from '@/utils/format';
 import { getAge, getAgeBracket } from '@/utils/age';
 import { buildRecommendations } from '@/services/recommendations';
+import { QuickInputSheet, type QuickInputIntent } from '@/components/dashboard/QuickInputSheet';
+import { ExpenseSheet } from '@/components/deduction/ExpenseSheet';
+import { MEDICAL_CATEGORIES, DONATION_CATEGORIES } from '@/components/deduction/expenseCategories';
+import type { ExpenseItem } from '@/types';
+
+type ActiveSheet =
+  | { kind: 'quick'; intent: QuickInputIntent }
+  | { kind: 'medical' }
+  | { kind: 'donation' };
+
+const QUICK_INTENTS: Record<string, QuickInputIntent> = {
+  pension: 'pension',
+  housing: 'housing',
+  rent: 'rent',
+  card: 'card',
+};
+
+function sheetForRec(recId: string): ActiveSheet | null {
+  const quick = QUICK_INTENTS[recId];
+  if (quick) return { kind: 'quick', intent: quick };
+  if (recId === 'medical') return { kind: 'medical' };
+  if (recId === 'donation') return { kind: 'donation' };
+  return null;
+}
 
 export function DashboardPage() {
   const data = useDataStore((s) => s.data);
   const profile = useAuthStore((s) => s.currentProfile);
   const year = useYearStore((s) => s.year);
+  const saveDeductions = useDataStore((s) => s.saveDeductions);
   const { result } = useCalculation();
+  const [activeSheet, setActiveSheet] = useState<ActiveSheet | null>(null);
 
   if (!data || !result) {
     return (
@@ -25,6 +52,27 @@ export function DashboardPage() {
   const age = getAge(profile?.birthYear, year);
   const ageBracket = getAgeBracket(age);
   const recs = buildRecommendations({ data, result, ageBracket });
+
+  const closeSheet = () => setActiveSheet(null);
+
+  const onMedicalChange = async (items: ExpenseItem[]) => {
+    await saveDeductions({
+      ...data.deductions,
+      medicalItems: items,
+      medical: items.reduce((s, i) => s + i.amount, 0),
+    });
+  };
+
+  const onDonationChange = async (items: ExpenseItem[]) => {
+    const hometown = items.filter((i) => i.category === 'hometown').reduce((s, i) => s + i.amount, 0);
+    const general = items.filter((i) => i.category !== 'hometown').reduce((s, i) => s + i.amount, 0);
+    await saveDeductions({
+      ...data.deductions,
+      donationItems: items,
+      donationHometown: hometown,
+      donationGeneral: general,
+    });
+  };
 
   const refund = result.refund;
   const isRefund = refund >= 0;
@@ -102,18 +150,35 @@ export function DashboardPage() {
             <h3 className="card-title" style={{ margin: 0 }}>당신만 받을 수 있는 혜택</h3>
           </div>
           <div className="youth-card-body">
-            {youthRecs.slice(0, 3).map((r) => (
-              <Link key={r.id} to={r.href} className="rec-row">
-                <span className="rec-icon">{r.icon}</span>
-                <div className="rec-text">
-                  <div className="rec-title">{r.title}</div>
-                  <div className="rec-desc">{r.description}</div>
-                </div>
-                {r.estimatedSavings > 0 && (
-                  <span className="rec-saving">+{wonCompact(r.estimatedSavings)}</span>
-                )}
-              </Link>
-            ))}
+            {youthRecs.slice(0, 3).map((r) => {
+              const sheet = sheetForRec(r.id);
+              const body = (
+                <>
+                  <span className="rec-icon">{r.icon}</span>
+                  <div className="rec-text">
+                    <div className="rec-title">{r.title}</div>
+                    <div className="rec-desc">{r.description}</div>
+                  </div>
+                  {r.estimatedSavings > 0 && (
+                    <span className="rec-saving">+{wonCompact(r.estimatedSavings)}</span>
+                  )}
+                </>
+              );
+              return sheet ? (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => setActiveSheet(sheet)}
+                  className="rec-row"
+                >
+                  {body}
+                </button>
+              ) : (
+                <Link key={r.id} to={r.href} className="rec-row">
+                  {body}
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}
@@ -135,36 +200,70 @@ export function DashboardPage() {
         {todoRecs
           .filter((r) => r.badge !== '청년')
           .slice(0, 6)
-          .map((r) => (
-            <Link key={r.id} to={r.href} className="rec-row">
-              <span className="rec-check off" />
-              <span className="rec-icon">{r.icon}</span>
-              <div className="rec-text">
-                <div className="rec-title">
-                  {r.title}
-                  {r.badge && <span className="rec-badge">{r.badge}</span>}
+          .map((r) => {
+            const sheet = sheetForRec(r.id);
+            const body = (
+              <>
+                <span className="rec-check off" />
+                <span className="rec-icon">{r.icon}</span>
+                <div className="rec-text">
+                  <div className="rec-title">
+                    {r.title}
+                    {r.badge && <span className="rec-badge">{r.badge}</span>}
+                  </div>
+                  <div className="rec-desc">{r.description}</div>
                 </div>
-                <div className="rec-desc">{r.description}</div>
-              </div>
-              {r.estimatedSavings > 0 && (
-                <span className="rec-saving">+{wonCompact(r.estimatedSavings)}</span>
-              )}
-            </Link>
-          ))}
+                {r.estimatedSavings > 0 && (
+                  <span className="rec-saving">+{wonCompact(r.estimatedSavings)}</span>
+                )}
+              </>
+            );
+            return sheet ? (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => setActiveSheet(sheet)}
+                className="rec-row"
+              >
+                {body}
+              </button>
+            ) : (
+              <Link key={r.id} to={r.href} className="rec-row">
+                {body}
+              </Link>
+            );
+          })}
 
         {doneRecs.length > 0 && (
           <details className="rec-done-fold">
             <summary>✓ 입력 완료 {doneRecs.length}개</summary>
-            {doneRecs.map((r) => (
-              <Link key={r.id} to={r.href} className="rec-row done">
-                <span className="rec-check on">✓</span>
-                <span className="rec-icon">{r.icon}</span>
-                <div className="rec-text">
-                  <div className="rec-title">{r.title}</div>
-                  <div className="rec-desc">{r.description}</div>
-                </div>
-              </Link>
-            ))}
+            {doneRecs.map((r) => {
+              const sheet = sheetForRec(r.id);
+              const body = (
+                <>
+                  <span className="rec-check on">✓</span>
+                  <span className="rec-icon">{r.icon}</span>
+                  <div className="rec-text">
+                    <div className="rec-title">{r.title}</div>
+                    <div className="rec-desc">{r.description}</div>
+                  </div>
+                </>
+              );
+              return sheet ? (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => setActiveSheet(sheet)}
+                  className="rec-row done"
+                >
+                  {body}
+                </button>
+              ) : (
+                <Link key={r.id} to={r.href} className="rec-row done">
+                  {body}
+                </Link>
+              );
+            })}
           </details>
         )}
       </div>
@@ -218,6 +317,32 @@ export function DashboardPage() {
         ⚠️ 본 결과는 추정치예요. 실제 홈택스와 차이가 있을 수 있어요.<br />
         모든 데이터는 이 기기에만 저장돼요.
       </p>
+
+      <QuickInputSheet
+        open={activeSheet?.kind === 'quick'}
+        intent={activeSheet?.kind === 'quick' ? activeSheet.intent : null}
+        onClose={closeSheet}
+      />
+      <ExpenseSheet
+        open={activeSheet?.kind === 'medical'}
+        onClose={closeSheet}
+        title="의료비 영수증"
+        emoji="🏥"
+        description="병원·약국·치과 등 — 총급여 3% 초과분 15% 환급"
+        categories={MEDICAL_CATEGORIES}
+        items={data.deductions.medicalItems ?? []}
+        onChange={onMedicalChange}
+      />
+      <ExpenseSheet
+        open={activeSheet?.kind === 'donation'}
+        onClose={closeSheet}
+        title="기부금"
+        emoji="🎁"
+        description="종교·구호·고향사랑 등 — 1천만 이하 15% 환급"
+        categories={DONATION_CATEGORIES}
+        items={data.deductions.donationItems ?? []}
+        onChange={onDonationChange}
+      />
     </>
   );
 }

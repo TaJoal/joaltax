@@ -27,7 +27,8 @@
     "basic": 1500000,
     "elderly": 1000000,
     "disabled": 2000000,
-    "singleParent": 1000000
+    "singleParent": 1000000,
+    "femaleWorker": 500000
   },
   "creditCardDeduction": {
     "thresholdRate": 0.25,
@@ -53,12 +54,19 @@
   "taxCredits": {
     "earnedIncome": {
       "tier1": { "max": 1300000, "rate": 0.55 },
-      "tier2": { "rate": 0.30 }
+      "tier2": { "rate": 0.30 },
+      "limitBrackets": [
+        { "salaryMax": 33000000, "base": 740000, "from": 0, "taper": 0, "floor": 740000 },
+        { "salaryMax": 70000000, "base": 740000, "from": 33000000, "taper": 0.008, "floor": 660000 },
+        { "salaryMax": 120000000, "base": 660000, "from": 70000000, "taper": 0.5, "floor": 500000 },
+        { "salaryMax": null, "base": 500000, "from": 120000000, "taper": 0.5, "floor": 200000 }
+      ]
     },
+    "standardCredit": 130000,
     "child": {
-      "1": 250000,
-      "2": 550000,
-      "3+": { "base": 550000, "perChild": 400000 }
+      "1": 150000,
+      "2": 350000,
+      "3+": { "base": 350000, "perChild": 300000 }
     },
     "pensionAccount": {
       "rateLow": 0.15,
@@ -77,7 +85,8 @@
     },
     "donation": {
       "general": { "underLimit": 0.15, "overLimit": 0.30, "threshold": 10000000 },
-      "hometown": { "under100k": 1.0, "over100k": 0.15 }
+      "hometown": { "under100k": 0.9090909090909091, "over100k": 0.15, "limit": 5000000 },
+      "political": { "tier1Max": 100000, "tier1Rate": 0.9090909090909091, "midMax": 30000000, "midRate": 0.15, "highRate": 0.25 }
     },
     "monthlyRent": {
       "rateLow": 0.17,

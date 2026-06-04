@@ -76,6 +76,8 @@ export interface Deductions {
   monthlyRent: number;
   insurance: number;
   isSingleParent: boolean;
+  /** 부녀자공제 대상 여부 (배우자 있는 여성 또는 부양가족 있는 여성 세대주, 종합소득 3천만 이하) */
+  isFemaleWorker?: boolean;
 }
 
 export interface YearData {
@@ -115,6 +117,7 @@ export interface TaxRules {
     elderly: number;
     disabled: number;
     singleParent: number;
+    femaleWorker: number;
   };
   creditCardDeduction: {
     thresholdRate: number;
@@ -137,7 +140,21 @@ export interface TaxRules {
     earnedIncome: {
       tier1: { max: number; rate: number };
       tier2: { rate: number };
+      /** 총급여별 근로소득세액공제 한도 (74/66/50/20만). 위에서부터 매칭 */
+      limitBrackets: Array<{
+        salaryMax: number | null;
+        /** 구간 시작 한도값 */
+        base: number;
+        /** 한도 감액 기준 총급여 (이 값을 초과한 만큼 taper 적용) */
+        from: number;
+        /** 총급여 초과분당 감액률 */
+        taper: number;
+        /** 한도 하한 */
+        floor: number;
+      }>;
     };
+    /** 특별소득공제·특별세액공제·월세를 적용받지 않을 때의 표준세액공제 */
+    standardCredit: number;
     child: {
       '1': number;
       '2': number;
@@ -157,7 +174,10 @@ export interface TaxRules {
     };
     donation: {
       general: { underLimit: number; overLimit: number; threshold: number };
-      hometown: { under100k: number; over100k: number };
+      /** 고향사랑기부: 10만 이하 100/110(지방세 합산 100%), 초과분 over100k, 연 limit 한도 */
+      hometown: { under100k: number; over100k: number; limit: number };
+      /** 정치자금기부: 10만 이하 100/110, 10만~midMax midRate, 초과 highRate */
+      political: { tier1Max: number; tier1Rate: number; midMax: number; midRate: number; highRate: number };
     };
     monthlyRent: {
       rateLow: number;
@@ -197,6 +217,8 @@ export interface TaxCalculationResult {
   donationCredit: number;
   insuranceCredit: number;
   monthlyRentCredit: number;
+  /** 표준세액공제 (특별공제 대신 적용된 경우 13만원, 아니면 0) */
+  standardCredit: number;
   totalTaxCredits: number;
   /** 결정세액 (소득세분만) — 산출세액 − 세액공제 */
   determinedTaxIncome: number;

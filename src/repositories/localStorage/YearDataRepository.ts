@@ -68,6 +68,7 @@ export function emptyDeductions(): Deductions {
     monthlyRent: 0,
     insurance: 0,
     isSingleParent: false,
+    isFemaleWorker: false,
   };
 }
 
@@ -138,7 +139,8 @@ export class LocalStorageYearDataRepository implements IYearDataRepository {
   }
 
   async getDeductions(profileKey: string, year: number): Promise<Deductions> {
-    return readJson<Deductions>(deductionsKey(profileKey, year), emptyDeductions());
+    // 누락 필드(신규 추가분)는 기본값으로 채워 마이그레이션
+    return { ...emptyDeductions(), ...readJson<Deductions>(deductionsKey(profileKey, year), emptyDeductions()) };
   }
   async saveDeductions(profileKey: string, year: number, data: Deductions) {
     writeJson(deductionsKey(profileKey, year), data);

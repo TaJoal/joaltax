@@ -75,6 +75,7 @@ export class LocalStorageProfileRepository implements IProfileRepository {
         localStorage.removeItem(k);
       }
     }
+    localStorage.removeItem(`app:onboarding-completed:${key}`);
     const current = localStorage.getItem(APP_KEYS.currentProfile);
     if (current === key) localStorage.removeItem(APP_KEYS.currentProfile);
   }
